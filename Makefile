@@ -262,7 +262,7 @@ prepare-release:
 	    echo quay.io/kuadrant/authorino:v$(AUTHORINO_VERSION) > $(AUTHORINO_IMAGE_FILE); \
 	fi
 	GH_TOKEN=$(GH_TOKEN) $(MAKE) fix-csv-replaces
-
+  
 # A comma-separated list of bundle images (e.g. make catalog-build BUNDLE_IMGS=example.com/operator-bundle:v0.1.0,example.com/operator-bundle:v0.2.0).
 # These images MUST exist in a registry and be pull-able.
 BUNDLE_IMGS ?= $(BUNDLE_IMG)
