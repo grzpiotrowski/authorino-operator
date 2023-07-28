@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.0
+    controller-gen.kubebuilder.io/version: v0.6.1
   creationTimestamp: null
   name: authconfigs.authorino.kuadrant.io
 spec:
@@ -15,36 +15,32 @@ spec:
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
-    - description: Ready for all hosts
-      jsonPath: .status.summary.ready
+    - description: Ready?
+      jsonPath: .status.ready
       name: Ready
-      type: string
-    - description: Number of hosts ready
-      jsonPath: .status.summary.numHostsReady
-      name: Hosts
-      type: string
+      type: boolean
     - description: Number of trusted identity sources
-      jsonPath: .status.summary.numIdentitySources
-      name: Authentication
+      jsonPath: .status.numIdentitySources
+      name: Id sources
       priority: 2
       type: integer
     - description: Number of external metadata sources
-      jsonPath: .status.summary.numMetadataSources
-      name: Metadata
+      jsonPath: .status.numMetadataSources
+      name: Metadata sources
       priority: 2
       type: integer
     - description: Number of authorization policies
-      jsonPath: .status.summary.numAuthorizationPolicies
-      name: Authorization
+      jsonPath: .status.numAuthorizationPolicies
+      name: Authz policies
       priority: 2
       type: integer
-    - description: Number of items added to the authorization response
-      jsonPath: .status.summary.numResponseItems
-      name: Response
+    - description: Number of items added to the client response
+      jsonPath: .status.numResponseItems
+      name: Response items
       priority: 2
       type: integer
     - description: Whether issuing Festival Wristbands
-      jsonPath: .status.summary.festivalWristbandEnabled
+      jsonPath: .status.festivalWristbandEnabled
       name: Wristband
       priority: 2
       type: boolean
@@ -97,184 +93,7 @@ spec:
                     required:
                     - name
                     - kubernetes
-                  - properties:
-                      authzed: {}
-                      name: {}
-                    required:
-                    - name
-                    - authzed
                   properties:
-                    authzed:
-                      description: Authzed authorization
-                      properties:
-                        endpoint:
-                          description: Endpoint of the Authzed service.
-                          type: string
-                        insecure:
-                          description: Insecure HTTP connection (i.e. disables TLS
-                            verification)
-                          type: boolean
-                        permission:
-                          description: The name of the permission (or relation) on
-                            which to execute the check.
-                          properties:
-                            value:
-                              description: Static value
-                              type: string
-                            valueFrom:
-                              description: Dynamic value
-                              properties:
-                                authJSON:
-                                  description: 'Selector to fetch a value from the
-                                    authorization JSON. It can be any path pattern
-                                    to fetch from the authorization JSON (e.g. ''context.request.http.host'')
-                                    or a string template with variable placeholders
-                                    that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                    Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                    can be used. The following string modifiers are
-                                    available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
-                                  type: string
-                              type: object
-                          type: object
-                        resource:
-                          description: The resource on which to check the permission
-                            or relation.
-                          properties:
-                            kind:
-                              description: StaticOrDynamicValue is either a constant
-                                static string value or a config for fetching a value
-                                from a dynamic source (e.g. a path pattern of authorization
-                                JSON)
-                              properties:
-                                value:
-                                  description: Static value
-                                  type: string
-                                valueFrom:
-                                  description: Dynamic value
-                                  properties:
-                                    authJSON:
-                                      description: 'Selector to fetch a value from
-                                        the authorization JSON. It can be any path
-                                        pattern to fetch from the authorization JSON
-                                        (e.g. ''context.request.http.host'') or a
-                                        string template with variable placeholders
-                                        that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                        Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                        can be used. The following string modifiers
-                                        are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
-                                      type: string
-                                  type: object
-                              type: object
-                            name:
-                              description: StaticOrDynamicValue is either a constant
-                                static string value or a config for fetching a value
-                                from a dynamic source (e.g. a path pattern of authorization
-                                JSON)
-                              properties:
-                                value:
-                                  description: Static value
-                                  type: string
-                                valueFrom:
-                                  description: Dynamic value
-                                  properties:
-                                    authJSON:
-                                      description: 'Selector to fetch a value from
-                                        the authorization JSON. It can be any path
-                                        pattern to fetch from the authorization JSON
-                                        (e.g. ''context.request.http.host'') or a
-                                        string template with variable placeholders
-                                        that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                        Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                        can be used. The following string modifiers
-                                        are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
-                                      type: string
-                                  type: object
-                              type: object
-                          type: object
-                        sharedSecretRef:
-                          description: Reference to a Secret key whose value will
-                            be used by Authorino to authenticate with the Authzed
-                            service.
-                          properties:
-                            key:
-                              description: The key of the secret to select from.  Must
-                                be a valid secret key.
-                              type: string
-                            name:
-                              description: The name of the secret in the Authorino's
-                                namespace to select from.
-                              type: string
-                          required:
-                          - key
-                          - name
-                          type: object
-                        subject:
-                          description: The subject that will be checked for the permission
-                            or relation.
-                          properties:
-                            kind:
-                              description: StaticOrDynamicValue is either a constant
-                                static string value or a config for fetching a value
-                                from a dynamic source (e.g. a path pattern of authorization
-                                JSON)
-                              properties:
-                                value:
-                                  description: Static value
-                                  type: string
-                                valueFrom:
-                                  description: Dynamic value
-                                  properties:
-                                    authJSON:
-                                      description: 'Selector to fetch a value from
-                                        the authorization JSON. It can be any path
-                                        pattern to fetch from the authorization JSON
-                                        (e.g. ''context.request.http.host'') or a
-                                        string template with variable placeholders
-                                        that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                        Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                        can be used. The following string modifiers
-                                        are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
-                                      type: string
-                                  type: object
-                              type: object
-                            name:
-                              description: StaticOrDynamicValue is either a constant
-                                static string value or a config for fetching a value
-                                from a dynamic source (e.g. a path pattern of authorization
-                                JSON)
-                              properties:
-                                value:
-                                  description: Static value
-                                  type: string
-                                valueFrom:
-                                  description: Dynamic value
-                                  properties:
-                                    authJSON:
-                                      description: 'Selector to fetch a value from
-                                        the authorization JSON. It can be any path
-                                        pattern to fetch from the authorization JSON
-                                        (e.g. ''context.request.http.host'') or a
-                                        string template with variable placeholders
-                                        that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                        Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                        can be used. The following string modifiers
-                                        are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
-                                      type: string
-                                  type: object
-                              type: object
-                          type: object
-                      required:
-                      - endpoint
-                      type: object
                     cache:
                       description: Caching options for the policy evaluation results
                         when enforcing this config. Omit it to avoid caching policy
@@ -300,7 +119,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           type: object
@@ -404,8 +223,7 @@ spec:
                                         Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                         can be used. The following string modifiers
                                         are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
+                                        @case:upper|lower, and @base64:encode|decode.'
                                       type: string
                                   type: object
                               type: object
@@ -431,8 +249,7 @@ spec:
                                         Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                         can be used. The following string modifiers
                                         are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
+                                        @case:upper|lower, and @base64:encode|decode.'
                                       type: string
                                   type: object
                               type: object
@@ -458,8 +275,7 @@ spec:
                                         Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                         can be used. The following string modifiers
                                         are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
+                                        @case:upper|lower, and @base64:encode|decode.'
                                       type: string
                                   type: object
                               type: object
@@ -485,8 +301,7 @@ spec:
                                         Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                         can be used. The following string modifiers
                                         are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
+                                        @case:upper|lower, and @base64:encode|decode.'
                                       type: string
                                   type: object
                               type: object
@@ -512,8 +327,7 @@ spec:
                                         Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                         can be used. The following string modifiers
                                         are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
+                                        @case:upper|lower, and @base64:encode|decode.'
                                       type: string
                                   type: object
                               type: object
@@ -539,8 +353,7 @@ spec:
                                         Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                         can be used. The following string modifiers
                                         are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                        @case:upper|lower, @base64:encode|decode and
-                                        @strip.'
+                                        @case:upper|lower, and @base64:encode|decode.'
                                       type: string
                                   type: object
                               type: object
@@ -565,7 +378,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           type: object
@@ -727,290 +540,6 @@ spec:
                   - name
                   type: object
                 type: array
-              callbacks:
-                description: List of callback configs. Authorino sends callbacks to
-                  specified endpoints at the end of the auth pipeline.
-                items:
-                  description: Endpoints to callback at the end of each auth pipeline.
-                  properties:
-                    http:
-                      description: Generic HTTP interface to obtain authorization
-                        metadata from a HTTP service.
-                      properties:
-                        body:
-                          description: Raw body of the HTTP request. Supersedes 'bodyParameters';
-                            use either one or the other. Use it with method=POST;
-                            for GET requests, set parameters as query string in the
-                            'endpoint' (placeholders can be used).
-                          properties:
-                            value:
-                              description: Static value
-                              type: string
-                            valueFrom:
-                              description: Dynamic value
-                              properties:
-                                authJSON:
-                                  description: 'Selector to fetch a value from the
-                                    authorization JSON. It can be any path pattern
-                                    to fetch from the authorization JSON (e.g. ''context.request.http.host'')
-                                    or a string template with variable placeholders
-                                    that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                    Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                    can be used. The following string modifiers are
-                                    available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
-                                  type: string
-                              type: object
-                          type: object
-                        bodyParameters:
-                          description: Custom parameters to encode in the body of
-                            the HTTP request. Superseded by 'body'; use either one
-                            or the other. Use it with method=POST; for GET requests,
-                            set parameters as query string in the 'endpoint' (placeholders
-                            can be used).
-                          items:
-                            properties:
-                              name:
-                                description: The name of the JSON property
-                                type: string
-                              value:
-                                description: Static value of the JSON property
-                                x-kubernetes-preserve-unknown-fields: true
-                              valueFrom:
-                                description: Dynamic value of the JSON property
-                                properties:
-                                  authJSON:
-                                    description: 'Selector to fetch a value from the
-                                      authorization JSON. It can be any path pattern
-                                      to fetch from the authorization JSON (e.g. ''context.request.http.host'')
-                                      or a string template with variable placeholders
-                                      that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                      Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                      can be used. The following string modifiers
-                                      are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                      @case:upper|lower, @base64:encode|decode and
-                                      @strip.'
-                                    type: string
-                                type: object
-                            required:
-                            - name
-                            type: object
-                          type: array
-                        contentType:
-                          default: application/x-www-form-urlencoded
-                          description: Content-Type of the request body. Shapes how
-                            'bodyParameters' are encoded. Use it with method=POST;
-                            for GET requests, Content-Type is automatically set to
-                            'text/plain'.
-                          enum:
-                          - application/x-www-form-urlencoded
-                          - application/json
-                          type: string
-                        credentials:
-                          description: Defines where client credentials will be passed
-                            in the request to the service. If omitted, it defaults
-                            to client credentials passed in the HTTP Authorization
-                            header and the "Bearer" prefix expected prepended to the
-                            secret value.
-                          properties:
-                            in:
-                              default: authorization_header
-                              description: The location in the request where client
-                                credentials shall be passed on requests authenticating
-                                with this identity source/authentication mode.
-                              enum:
-                              - authorization_header
-                              - custom_header
-                              - query
-                              - cookie
-                              type: string
-                            keySelector:
-                              description: Used in conjunction with the `in` parameter.
-                                When used with `authorization_header`, the value is
-                                the prefix of the client credentials string, separated
-                                by a white-space, in the HTTP Authorization header
-                                (e.g. "Bearer", "Basic"). When used with `custom_header`,
-                                `query` or `cookie`, the value is the name of the
-                                HTTP header, query string parameter or cookie key,
-                                respectively.
-                              type: string
-                          required:
-                          - keySelector
-                          type: object
-                        endpoint:
-                          description: Endpoint of the HTTP service. The endpoint
-                            accepts variable placeholders in the format "{selector}",
-                            where "selector" is any pattern supported by https://pkg.go.dev/github.com/tidwall/gjson
-                            and selects value from the authorization JSON. E.g. https://ext-auth-server.io/metadata?p={context.request.http.path}
-                          type: string
-                        headers:
-                          description: Custom headers in the HTTP request.
-                          items:
-                            properties:
-                              name:
-                                description: The name of the JSON property
-                                type: string
-                              value:
-                                description: Static value of the JSON property
-                                x-kubernetes-preserve-unknown-fields: true
-                              valueFrom:
-                                description: Dynamic value of the JSON property
-                                properties:
-                                  authJSON:
-                                    description: 'Selector to fetch a value from the
-                                      authorization JSON. It can be any path pattern
-                                      to fetch from the authorization JSON (e.g. ''context.request.http.host'')
-                                      or a string template with variable placeholders
-                                      that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                      Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                      can be used. The following string modifiers
-                                      are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                      @case:upper|lower, @base64:encode|decode and
-                                      @strip.'
-                                    type: string
-                                type: object
-                            required:
-                            - name
-                            type: object
-                          type: array
-                        method:
-                          default: GET
-                          description: 'HTTP verb used in the request to the service.
-                            Accepted values: GET (default), POST. When the request
-                            method is POST, the authorization JSON is passed in the
-                            body of the request.'
-                          enum:
-                          - GET
-                          - POST
-                          type: string
-                        oauth2:
-                          description: Authentication with the HTTP service by OAuth2
-                            Client Credentials grant.
-                          properties:
-                            cache:
-                              default: true
-                              description: Caches and reuses the token until expired.
-                                Set it to false to force fetch the token at every
-                                authorization request regardless of expiration.
-                              type: boolean
-                            clientId:
-                              description: OAuth2 Client ID.
-                              type: string
-                            clientSecretRef:
-                              description: Reference to a Kuberentes Secret key that
-                                stores that OAuth2 Client Secret.
-                              properties:
-                                key:
-                                  description: The key of the secret to select from.  Must
-                                    be a valid secret key.
-                                  type: string
-                                name:
-                                  description: The name of the secret in the Authorino's
-                                    namespace to select from.
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            extraParams:
-                              additionalProperties:
-                                type: string
-                              description: Optional extra parameters for the requests
-                                to the token URL.
-                              type: object
-                            scopes:
-                              description: Optional scopes for the client credentials
-                                grant, if supported by he OAuth2 server.
-                              items:
-                                type: string
-                              type: array
-                            tokenUrl:
-                              description: Token endpoint URL of the OAuth2 resource
-                                server.
-                              type: string
-                          required:
-                          - clientId
-                          - clientSecretRef
-                          - tokenUrl
-                          type: object
-                        sharedSecretRef:
-                          description: Reference to a Secret key whose value will
-                            be passed by Authorino in the request. The HTTP service
-                            can use the shared secret to authenticate the origin of
-                            the request. Ignored if used together with oauth2.
-                          properties:
-                            key:
-                              description: The key of the secret to select from.  Must
-                                be a valid secret key.
-                              type: string
-                            name:
-                              description: The name of the secret in the Authorino's
-                                namespace to select from.
-                              type: string
-                          required:
-                          - key
-                          - name
-                          type: object
-                      required:
-                      - endpoint
-                      type: object
-                    metrics:
-                      default: false
-                      description: Whether this callback config should generate individual
-                        observability metrics
-                      type: boolean
-                    name:
-                      description: Name of the callback. It can be used to refer to
-                        the resolved callback response in other configs.
-                      type: string
-                    priority:
-                      default: 0
-                      description: Priority group of the config. All configs in the
-                        same priority group are evaluated concurrently; consecutive
-                        priority groups are evaluated sequentially.
-                      type: integer
-                    when:
-                      description: Conditions for Authorino to perform this callback.
-                        If omitted, the callback will be attempted for all requests.
-                        If present, all conditions must match for the callback to
-                        be attempted; otherwise, the callback will be skipped.
-                      items:
-                        properties:
-                          operator:
-                            description: 'The binary operator to be applied to the
-                              content fetched from the authorization JSON, for comparison
-                              with "value". Possible values are: "eq" (equal to),
-                              "neq" (not equal to), "incl" (includes; for arrays),
-                              "excl" (excludes; for arrays), "matches" (regex)'
-                            enum:
-                            - eq
-                            - neq
-                            - incl
-                            - excl
-                            - matches
-                            type: string
-                          patternRef:
-                            description: Name of a named pattern
-                            type: string
-                          selector:
-                            description: Any pattern supported by https://pkg.go.dev/github.com/tidwall/gjson.
-                              The value is used to fetch content from the input authorization
-                              JSON built by Authorino along the identity and metadata
-                              phases.
-                            type: string
-                          value:
-                            description: The value of reference for the comparison
-                              with the content fetched from the authorization JSON.
-                              If used with the "matches" operator, the value must
-                              compile to a valid Golang regex.
-                            type: string
-                        type: object
-                      type: array
-                  required:
-                  - http
-                  - name
-                  type: object
-                type: array
               denyWith:
                 description: Custom denial response codes, statuses and headers to
                   override default 40x's.
@@ -1037,7 +566,7 @@ spec:
                                   Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                   can be used. The following string modifiers are
                                   available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                  @case:upper|lower, @base64:encode|decode and @strip.'
+                                  @case:upper|lower, and @base64:encode|decode.'
                                 type: string
                             type: object
                         type: object
@@ -1071,7 +600,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           required:
@@ -1096,7 +625,7 @@ spec:
                                   Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                   can be used. The following string modifiers are
                                   available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                  @case:upper|lower, @base64:encode|decode and @strip.'
+                                  @case:upper|lower, and @base64:encode|decode.'
                                 type: string
                             type: object
                         type: object
@@ -1123,7 +652,7 @@ spec:
                                   Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                   can be used. The following string modifiers are
                                   available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                  @case:upper|lower, @base64:encode|decode and @strip.'
+                                  @case:upper|lower, and @base64:encode|decode.'
                                 type: string
                             type: object
                         type: object
@@ -1157,7 +686,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           required:
@@ -1182,7 +711,7 @@ spec:
                                   Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                   can be used. The following string modifiers are
                                   available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                  @case:upper|lower, @base64:encode|decode and @strip.'
+                                  @case:upper|lower, and @base64:encode|decode.'
                                 type: string
                             type: object
                         type: object
@@ -1229,13 +758,6 @@ spec:
                     - apiKey
                   - properties:
                       credentials: {}
-                      mtls: {}
-                      name: {}
-                    required:
-                    - name
-                    - mtls
-                  - properties:
-                      credentials: {}
                       kubernetes: {}
                       name: {}
                     required:
@@ -1248,13 +770,6 @@ spec:
                     required:
                     - name
                     - anonymous
-                  - properties:
-                      credentials: {}
-                      name: {}
-                      plain: {}
-                    required:
-                    - name
-                    - plain
                   properties:
                     anonymous:
                       type: object
@@ -1263,59 +778,19 @@ spec:
                         allNamespaces:
                           default: false
                           description: Whether Authorino should look for API key secrets
-                            in all namespaces or only in the same namespace as the
+                            in all namespaces or only in the same namespace of the
                             AuthConfig. Enabling this option in namespaced Authorino
                             instances has no effect.
                           type: boolean
-                        selector:
-                          description: Label selector used by Authorino to match secrets
-                            from the cluster storing valid credentials to authenticate
-                            to this service
-                          properties:
-                            matchExpressions:
-                              description: matchExpressions is a list of label selector
-                                requirements. The requirements are ANDed.
-                              items:
-                                description: A label selector requirement is a selector
-                                  that contains values, a key, and an operator that
-                                  relates the key and values.
-                                properties:
-                                  key:
-                                    description: key is the label key that the selector
-                                      applies to.
-                                    type: string
-                                  operator:
-                                    description: operator represents a key's relationship
-                                      to a set of values. Valid operators are In,
-                                      NotIn, Exists and DoesNotExist.
-                                    type: string
-                                  values:
-                                    description: values is an array of string values.
-                                      If the operator is In or NotIn, the values array
-                                      must be non-empty. If the operator is Exists
-                                      or DoesNotExist, the values array must be empty.
-                                      This array is replaced during a strategic merge
-                                      patch.
-                                    items:
-                                      type: string
-                                    type: array
-                                required:
-                                - key
-                                - operator
-                                type: object
-                              type: array
-                            matchLabels:
-                              additionalProperties:
-                                type: string
-                              description: matchLabels is a map of {key,value} pairs.
-                                A single {key,value} in the matchLabels map is equivalent
-                                to an element of matchExpressions, whose key field
-                                is "key", the operator is "In", and the values array
-                                contains only "value". The requirements are ANDed.
-                              type: object
+                        labelSelectors:
+                          additionalProperties:
+                            type: string
+                          description: The map of label selectors used by Authorino
+                            to match secrets from the cluster storing valid credentials
+                            to authenticate to this service
                           type: object
                       required:
-                      - selector
+                      - labelSelectors
                       type: object
                     cache:
                       description: Caching options for the identity resolved when
@@ -1342,7 +817,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           type: object
@@ -1395,11 +870,6 @@ spec:
                           name:
                             description: The name of the JSON property
                             type: string
-                          overwrite:
-                            default: false
-                            description: Whether the value should overwrite the value
-                              of an existing property with the same name.
-                            type: boolean
                           value:
                             description: Static value of the JSON property
                             x-kubernetes-preserve-unknown-fields: true
@@ -1415,7 +885,7 @@ spec:
                                   Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                   can be used. The following string modifiers are
                                   available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                  @case:upper|lower, @base64:encode|decode and @strip.'
+                                  @case:upper|lower, and @base64:encode|decode.'
                                 type: string
                             type: object
                         required:
@@ -1439,65 +909,6 @@ spec:
                       description: Whether this identity config should generate individual
                         observability metrics
                       type: boolean
-                    mtls:
-                      properties:
-                        allNamespaces:
-                          default: false
-                          description: Whether Authorino should look for TLS secrets
-                            in all namespaces or only in the same namespace as the
-                            AuthConfig. Enabling this option in namespaced Authorino
-                            instances has no effect.
-                          type: boolean
-                        selector:
-                          description: Label selector used by Authorino to match secrets
-                            from the cluster storing trusted CA certificates to validate
-                            clients trying to authenticate to this service
-                          properties:
-                            matchExpressions:
-                              description: matchExpressions is a list of label selector
-                                requirements. The requirements are ANDed.
-                              items:
-                                description: A label selector requirement is a selector
-                                  that contains values, a key, and an operator that
-                                  relates the key and values.
-                                properties:
-                                  key:
-                                    description: key is the label key that the selector
-                                      applies to.
-                                    type: string
-                                  operator:
-                                    description: operator represents a key's relationship
-                                      to a set of values. Valid operators are In,
-                                      NotIn, Exists and DoesNotExist.
-                                    type: string
-                                  values:
-                                    description: values is an array of string values.
-                                      If the operator is In or NotIn, the values array
-                                      must be non-empty. If the operator is Exists
-                                      or DoesNotExist, the values array must be empty.
-                                      This array is replaced during a strategic merge
-                                      patch.
-                                    items:
-                                      type: string
-                                    type: array
-                                required:
-                                - key
-                                - operator
-                                type: object
-                              type: array
-                            matchLabels:
-                              additionalProperties:
-                                type: string
-                              description: matchLabels is a map of {key,value} pairs.
-                                A single {key,value} in the matchLabels map is equivalent
-                                to an element of matchExpressions, whose key field
-                                is "key", the operator is "In", and the values array
-                                contains only "value". The requirements are ANDed.
-                              type: object
-                          type: object
-                      required:
-                      - selector
-                      type: object
                     name:
                       description: The name of this identity source/authentication
                         mode. It usually identifies a source of identities or group
@@ -1545,20 +956,6 @@ spec:
                           type: integer
                       required:
                       - endpoint
-                      type: object
-                    plain:
-                      properties:
-                        authJSON:
-                          description: 'Selector to fetch a value from the authorization
-                            JSON. It can be any path pattern to fetch from the authorization
-                            JSON (e.g. ''context.request.http.host'') or a string
-                            template with variable placeholders that resolve to patterns
-                            (e.g. "Hello, {auth.identity.name}!"). Any patterns supported
-                            by https://pkg.go.dev/github.com/tidwall/gjson can be
-                            used. The following string modifiers are available: @extract:{sep:"
-                            ",pos:0}, @replace{old:"",new:""}, @case:upper|lower,
-                            @base64:encode|decode and @strip.'
-                          type: string
                       type: object
                     priority:
                       default: 0
@@ -1641,8 +1038,8 @@ spec:
                     - name
                     - uma
                   - properties:
-                      http: {}
                       name: {}
+                      uma: {}
                     required:
                     - name
                     - http
@@ -1672,7 +1069,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           type: object
@@ -1688,37 +1085,10 @@ spec:
                       description: Generic HTTP interface to obtain authorization
                         metadata from a HTTP service.
                       properties:
-                        body:
-                          description: Raw body of the HTTP request. Supersedes 'bodyParameters';
-                            use either one or the other. Use it with method=POST;
-                            for GET requests, set parameters as query string in the
-                            'endpoint' (placeholders can be used).
-                          properties:
-                            value:
-                              description: Static value
-                              type: string
-                            valueFrom:
-                              description: Dynamic value
-                              properties:
-                                authJSON:
-                                  description: 'Selector to fetch a value from the
-                                    authorization JSON. It can be any path pattern
-                                    to fetch from the authorization JSON (e.g. ''context.request.http.host'')
-                                    or a string template with variable placeholders
-                                    that resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                    Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                    can be used. The following string modifiers are
-                                    available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
-                                  type: string
-                              type: object
-                          type: object
                         bodyParameters:
                           description: Custom parameters to encode in the body of
-                            the HTTP request. Superseded by 'body'; use either one
-                            or the other. Use it with method=POST; for GET requests,
-                            set parameters as query string in the 'endpoint' (placeholders
-                            can be used).
+                            the HTTP request. Use it with method=POST; for GET requests,
+                            specify parameters using placeholders in the endpoint.
                           items:
                             properties:
                               name:
@@ -1739,8 +1109,7 @@ spec:
                                       Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                       can be used. The following string modifiers
                                       are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                      @case:upper|lower, @base64:encode|decode and
-                                      @strip.'
+                                      @case:upper|lower, and @base64:encode|decode.'
                                     type: string
                                 type: object
                             required:
@@ -1749,10 +1118,7 @@ spec:
                           type: array
                         contentType:
                           default: application/x-www-form-urlencoded
-                          description: Content-Type of the request body. Shapes how
-                            'bodyParameters' are encoded. Use it with method=POST;
-                            for GET requests, Content-Type is automatically set to
-                            'text/plain'.
+                          description: Content-Type of the request body.
                           enum:
                           - application/x-www-form-urlencoded
                           - application/json
@@ -1816,8 +1182,7 @@ spec:
                                       Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                       can be used. The following string modifiers
                                       are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                      @case:upper|lower, @base64:encode|decode and
-                                      @strip.'
+                                      @case:upper|lower, and @base64:encode|decode.'
                                     type: string
                                 type: object
                             required:
@@ -1825,7 +1190,6 @@ spec:
                             type: object
                           type: array
                         method:
-                          default: GET
                           description: 'HTTP verb used in the request to the service.
                             Accepted values: GET (default), POST. When the request
                             method is POST, the authorization JSON is passed in the
@@ -1834,61 +1198,11 @@ spec:
                           - GET
                           - POST
                           type: string
-                        oauth2:
-                          description: Authentication with the HTTP service by OAuth2
-                            Client Credentials grant.
-                          properties:
-                            cache:
-                              default: true
-                              description: Caches and reuses the token until expired.
-                                Set it to false to force fetch the token at every
-                                authorization request regardless of expiration.
-                              type: boolean
-                            clientId:
-                              description: OAuth2 Client ID.
-                              type: string
-                            clientSecretRef:
-                              description: Reference to a Kuberentes Secret key that
-                                stores that OAuth2 Client Secret.
-                              properties:
-                                key:
-                                  description: The key of the secret to select from.  Must
-                                    be a valid secret key.
-                                  type: string
-                                name:
-                                  description: The name of the secret in the Authorino's
-                                    namespace to select from.
-                                  type: string
-                              required:
-                              - key
-                              - name
-                              type: object
-                            extraParams:
-                              additionalProperties:
-                                type: string
-                              description: Optional extra parameters for the requests
-                                to the token URL.
-                              type: object
-                            scopes:
-                              description: Optional scopes for the client credentials
-                                grant, if supported by he OAuth2 server.
-                              items:
-                                type: string
-                              type: array
-                            tokenUrl:
-                              description: Token endpoint URL of the OAuth2 resource
-                                server.
-                              type: string
-                          required:
-                          - clientId
-                          - clientSecretRef
-                          - tokenUrl
-                          type: object
                         sharedSecretRef:
                           description: Reference to a Secret key whose value will
                             be passed by Authorino in the request. The HTTP service
                             can use the shared secret to authenticate the origin of
-                            the request. Ignored if used together with oauth2.
+                            the request.
                           properties:
                             key:
                               description: The key of the secret to select from.  Must
@@ -2049,25 +1363,6 @@ spec:
                   description: 'Dynamic response to return to the client. Apart from
                     "name", one of the following parameters is required and only one
                     of the following parameters is allowed: "wristband" or "json".'
-                  oneOf:
-                  - properties:
-                      name: {}
-                      wristband: {}
-                    required:
-                    - name
-                    - wristband
-                  - properties:
-                      json: {}
-                      name: {}
-                    required:
-                    - name
-                    - json
-                  - properties:
-                      name: {}
-                      plain: {}
-                    required:
-                    - name
-                    - plain
                   properties:
                     cache:
                       description: Caching options for dynamic responses built when
@@ -2094,7 +1389,7 @@ spec:
                                     Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                     can be used. The following string modifiers are
                                     available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                    @case:upper|lower, @base64:encode|decode and @strip.'
+                                    @case:upper|lower, and @base64:encode|decode.'
                                   type: string
                               type: object
                           type: object
@@ -2131,8 +1426,7 @@ spec:
                                       Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                       can be used. The following string modifiers
                                       are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                      @case:upper|lower, @base64:encode|decode and
-                                      @strip.'
+                                      @case:upper|lower, and @base64:encode|decode.'
                                     type: string
                                 type: object
                             required:
@@ -2151,30 +1445,6 @@ spec:
                       description: Name of the custom response. It can be used to
                         refer to the resolved response object in other configs.
                       type: string
-                    plain:
-                      description: StaticOrDynamicValue is either a constant static
-                        string value or a config for fetching a value from a dynamic
-                        source (e.g. a path pattern of authorization JSON)
-                      properties:
-                        value:
-                          description: Static value
-                          type: string
-                        valueFrom:
-                          description: Dynamic value
-                          properties:
-                            authJSON:
-                              description: 'Selector to fetch a value from the authorization
-                                JSON. It can be any path pattern to fetch from the
-                                authorization JSON (e.g. ''context.request.http.host'')
-                                or a string template with variable placeholders that
-                                resolve to patterns (e.g. "Hello, {auth.identity.name}!").
-                                Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
-                                can be used. The following string modifiers are available:
-                                @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                @case:upper|lower, @base64:encode|decode and @strip.'
-                              type: string
-                          type: object
-                      type: object
                     priority:
                       default: 0
                       description: Priority group of the config. All configs in the
@@ -2271,8 +1541,7 @@ spec:
                                       Any patterns supported by https://pkg.go.dev/github.com/tidwall/gjson
                                       can be used. The following string modifiers
                                       are available: @extract:{sep:" ",pos:0}, @replace{old:"",new:""},
-                                      @case:upper|lower, @base64:encode|decode and
-                                      @strip.'
+                                      @case:upper|lower, and @base64:encode|decode.'
                                     type: string
                                 type: object
                             required:
@@ -2381,85 +1650,29 @@ spec:
           status:
             description: AuthConfigStatus defines the observed state of AuthConfig
             properties:
-              conditions:
-                items:
-                  properties:
-                    lastTransitionTime:
-                      description: Last time the condition transit from one status
-                        to another.
-                      format: date-time
-                      type: string
-                    lastUpdatedTime:
-                      description: Last time the condition was updated
-                      format: date-time
-                      type: string
-                    message:
-                      description: Human readable message indicating details about
-                        last transition.
-                      type: string
-                    reason:
-                      description: (brief) reason for the condition's last transition.
-                      type: string
-                    status:
-                      description: Status of the condition, one of True, False, Unknown.
-                      type: string
-                    type:
-                      description: Type of condition
-                      type: string
-                  required:
-                  - status
-                  - type
-                  type: object
-                type: array
-              summary:
-                properties:
-                  festivalWristbandEnabled:
-                    description: Indicator of whether the AuthConfig issues Festival
-                      Wristband tokens on successful evaluation of the AuthConfig
-                      (access granted)
-                    type: boolean
-                  hostsReady:
-                    description: Lists the hosts from spec.hosts linked to the resource
-                      in the index
-                    items:
-                      type: string
-                    type: array
-                  numAuthorizationPolicies:
-                    description: Number of authorization policies in the AuthConfig
-                    format: int64
-                    type: integer
-                  numHostsReady:
-                    description: Number of hosts from spec.hosts linked to the resource
-                      in the index, compared to the total number of hosts in spec.hosts
-                    type: string
-                  numIdentitySources:
-                    description: Number of trusted sources of identity for authentication
-                      in the AuthConfig
-                    format: int64
-                    type: integer
-                  numMetadataSources:
-                    description: Number of sources of external metadata in the AuthConfig
-                    format: int64
-                    type: integer
-                  numResponseItems:
-                    description: Number of custom authorization response items in
-                      the AuthConfig
-                    format: int64
-                    type: integer
-                  ready:
-                    description: Whether all hosts from spec.hosts have been linked
-                      to the resource in the index
-                    type: boolean
-                required:
-                - festivalWristbandEnabled
-                - hostsReady
-                - numAuthorizationPolicies
-                - numHostsReady
-                - numIdentitySources
-                - numMetadataSources
-                - numResponseItems
-                - ready
-                type: object
+              festivalWristbandEnabled:
+                type: boolean
+              numAuthorizationPolicies:
+                format: int64
+                type: integer
+              numIdentitySources:
+                format: int64
+                type: integer
+              numMetadataSources:
+                format: int64
+                type: integer
+              numResponseItems:
+                format: int64
+                type: integer
+              ready:
+                type: boolean
+            required:
+            - festivalWristbandEnabled
+            - numAuthorizationPolicies
+            - numIdentitySources
+            - numMetadataSources
+            - numResponseItems
+            - ready
             type: object
         type: object
     served: true
@@ -2470,5 +1683,5 @@ status:
   acceptedNames:
     kind: ""
     plural: ""
-  conditions: null
-  storedVersions: null
+  conditions: []
+  storedVersions: []
