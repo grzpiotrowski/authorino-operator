@@ -227,7 +227,7 @@ bundle: export IMAGE_TAG := $(IMAGE_TAG)
 bundle: export BUNDLE_VERSION := $(BUNDLE_VERSION)
 bundle: manifests kustomize operator-sdk ## Generate bundle manifests and metadata, then validate generated files.
 	$(OPERATOR_SDK) generate kustomize manifests -q
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(OPERATOR_IMAGE)
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(OPERATOR_IMAGE):$(IMAGE_TAG)
 	envsubst \
         < config/manifests/bases/authorino-operator.clusterserviceversion.template.yaml \
         > config/manifests/bases/authorino-operator.clusterserviceversion.yaml
@@ -282,7 +282,7 @@ catalog-build: opm ## Build a catalog image.
 
 .PHONY: catalog-generate
 catalog-generate: opm ## Generate a catalog/index Dockerfile.
-	$(OPM) index add --generate --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+	$(OPM) index add --generate --container-tool docker --mode semver --tag $(CATALOG_IMG) --bundles $(BUNDLE_IMGS):$(IMAGE_TAG) $(FROM_INDEX_OPT)
 
 # Push the catalog image.
 .PHONY: catalog-push
